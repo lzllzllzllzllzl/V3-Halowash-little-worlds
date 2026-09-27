@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>@@TITLE@@</title>
+<meta name="description" content="@@ARIA@@">
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#122039;overscroll-behavior:none}
+body{font-family:system-ui,sans-serif}
+#world{display:block;width:100%;height:100%;outline:none;touch-action:none;cursor:grab;opacity:0;transition:opacity .6s ease}
+#world.ready{opacity:1}#world:active{cursor:grabbing}
+.vignette{position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 48% 42%,transparent 38%,#030a1980 100%)}
+#loading{position:fixed;left:50%;top:50%;width:22px;height:22px;margin:-11px;border:1px solid #9fc8d030;border-top-color:#c3dce0aa;border-radius:50%;animation:turn 1s linear infinite}
+#fallback{position:absolute;inset:0;place-content:center;text-align:center;padding:30px;color:#d0e0eb;background:#122039;font-size:16px;line-height:1.8}
+#fallback:not([hidden]){display:grid}
+.hud{position:fixed;left:0;right:0;display:flex;justify-content:space-between;gap:10px;padding:16px 18px;pointer-events:none;z-index:10}
+.hud-top{top:0;align-items:flex-start}
+.hud-bottom{bottom:max(14px,env(safe-area-inset-bottom));align-items:flex-end;flex-wrap:wrap}
+.chip{pointer-events:auto;border:1px solid #2ea8a0;border-radius:12px;background:#173145f2;color:#d9f3ef;font:600 13px/1.5 system-ui,sans-serif;padding:9px 14px;text-decoration:none;display:inline-block;box-shadow:0 6px 18px #0006}
+.chip-back{border-radius:999px;color:#b8d9df}
+.chip-back:hover{background:#1d4058f2}
+.chip-sign{position:relative;color:#eef7f5;font-size:14px;letter-spacing:.05em;padding:11px 16px}
+.chip-sign .dot{position:absolute;left:50%;top:-15px;width:6px;height:6px;transform:translateX(-50%) rotate(45deg);background:#7fe3d8;box-shadow:0 0 10px #7fe3d8}
+.chip-desc{border-radius:12px;color:#b8d9df;font-weight:500;max-width:min(560px,86vw);margin:0}
+.chip-hint{border-radius:999px;border-color:#9fc8d055;color:#9fc8d0b3;font-weight:500}
+.hud-actions{display:flex;gap:8px;margin-left:auto}
+.chip-btn{border-radius:999px;cursor:pointer}
+.chip-btn:hover{background:#1d4058f2}
+@media(max-width:640px){.hud{padding:12px}.chip-hint{display:none}.chip-desc{font-size:12px}}
+@keyframes turn{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){#world{transition:none}#loading{animation:none}}
+</style>
+</head>
+<body>
+<canvas id="world" tabindex="0" role="application" aria-label="@@ARIA@@"></canvas>
+<div class="vignette" aria-hidden="true"></div>
+<div id="loading" aria-hidden="true"></div>
+<div id="fallback" hidden><p>这个页面需要 WebGL 支持，请换用较新的浏览器打开。</p></div>
+<header class="hud hud-top">
+  <a class="chip chip-back" href="./index.html">← 返回小世界</a>
+  <div class="chip chip-sign"><i class="dot" aria-hidden="true"></i>@@SIGN@@</div>
+</header>
+<footer class="hud hud-bottom">
+  <p class="chip chip-desc">@@DESC@@</p>
+  <div class="hud-actions">
+    <span class="chip chip-hint">拖拽旋转 · 滚轮缩放 · Esc 返回</span>
+    <button id="pause" class="chip chip-btn" type="button" aria-pressed="false">⏸ 暂停</button>
+  </div>
+</footer>
+<script src="./scene-bundle.js?v=@@BUNDLE_V@@"></script>
+<script>window.HWScene.start({ model: "data:model/gltf-binary;base64,@@MODEL@@", azimuth: @@AZIMUTH@@, focus: @@FOCUS@@, span: @@SPAN@@ });</script>
+</body>
+</html>
