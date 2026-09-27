@@ -260,14 +260,18 @@ async function start(config) {
     return;
   }
 
-  /* normalize each diorama onto its plaza + white callout pill */
+  /* normalize each diorama onto its plaza + white callout pill. Yaw is set
+   * before measuring: footprint then refers to the ROTATED footprint, so
+   * the GLB's own base pad (whose corners swing out under a 45° yaw) stays
+   * on the plaza and every diorama fills its slab uniformly. */
   const items = worlds.map((w, i) => {
     const model = gltfs[i].scene;
     model.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } });
+    model.rotation.y = THREE.MathUtils.degToRad(START_THETA - 180 + (w.yaw || 0));
     const box3 = new THREE.Box3().setFromObject(model);
     const size = box3.getSize(new THREE.Vector3());
     const center = box3.getCenter(new THREE.Vector3());
-    const foot = w.footprint || 9.8;
+    const foot = w.footprint || 11.2;
     const s = foot / Math.max(size.x, size.z);
     const wrap = new THREE.Group();
     const unit = new THREE.Group();
@@ -292,12 +296,6 @@ async function start(config) {
     scene.add(wrap);
     return { wrap, unit, model, callout, spec: w, index: i };
   });
-
-  /* rotate each diorama so its front faces the start azimuth; per-world
-   * yaw values were calibrated against the GLB models' front orientations
-   * (contact-sheet render at the same camera azimuth/elevation) */
-  for (const it of items)
-    it.model.rotation.y = THREE.MathUtils.degToRad(START_THETA - 180 + (it.spec.yaw || 0));
 
   /* rows of street trees on the sidewalk band */
   addStreetTrees(scene);
