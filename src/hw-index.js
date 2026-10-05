@@ -131,7 +131,7 @@ const MATS = {
   bark: new THREE.MeshStandardMaterial({ color: 0x63686d, roughness: .95 }),
   leafA: new THREE.MeshStandardMaterial({ color: 0x6d7a70, roughness: 1 }),
   leafB: new THREE.MeshStandardMaterial({ color: 0x5f6d63, roughness: 1 }),
-  hedge: new THREE.MeshStandardMaterial({ color: 0x7a9455, roughness: 1 }),
+  hedge: new THREE.MeshStandardMaterial({ color: 0x647e50, roughness: 1 }),
   planter: new THREE.MeshStandardMaterial({ color: 0xd5d9dc, roughness: .92 })
 };
 
@@ -161,9 +161,16 @@ function makeTree() {
   return g;
 }
 
-/* prepare the GLB tree once: height-normalize, base on y=0 */
+/* prepare the GLB tree once: deepen the canopy to the key visual's forest
+ * green, height-normalize, base on y=0 */
 function prepTreeProto(src) {
   const t = src.clone(true);
+  t.traverse(o => {
+    if (o.isMesh && o.material) {
+      o.material = o.material.clone();
+      o.material.color = new THREE.Color(0x8fa478);   /* deep-forest tint over the baked albedo */
+    }
+  });
   const box3 = new THREE.Box3().setFromObject(t);
   const size = box3.getSize(new THREE.Vector3());
   const s = TREE_H / size.y;
