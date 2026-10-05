@@ -27,6 +27,8 @@ const MODEL_URLS = {
   garden: "models/garden-main.glb", /* 养老院护理 */
   salon: "models/salon-main.glb"    /* 头皮沙龙 */
 };
+const TREE_MODEL_URL = "models/tree-main.glb"; /* street trees, height-normalized */
+const TREE_H = 2.4;                            /* matches the old procedural trees */
 
 /* ------------------------------------- white callout pills (3D sprites) */
 const ICON_PATHS = {
@@ -129,12 +131,22 @@ const MATS = {
   bark: new THREE.MeshStandardMaterial({ color: 0x63686d, roughness: .95 }),
   leafA: new THREE.MeshStandardMaterial({ color: 0x6d7a70, roughness: 1 }),
   leafB: new THREE.MeshStandardMaterial({ color: 0x5f6d63, roughness: 1 }),
-  hedge: new THREE.MeshStandardMaterial({ color: 0x77857a, roughness: 1 }),
+  hedge: new THREE.MeshStandardMaterial({ color: 0x7a9455, roughness: 1 }),
   planter: new THREE.MeshStandardMaterial({ color: 0xd5d9dc, roughness: .92 })
 };
 
+let treeProto = null;                        /* prepared GLB street tree */
+
 function makeTree() {
   const g = new THREE.Group();
+  if (treeProto) {                             /* GLB street tree, height-normalized */
+    const t = treeProto.clone(true);
+    t.rotation.y = Math.random() * Math.PI * 2;
+    t.scale.multiplyScalar(.85 + Math.random() * .3);
+    g.add(t);
+    return g;
+  }
+  /* procedural fallback while / if the GLB tree is unavailable */
   const trunk = new THREE.Mesh(new THREE.CylinderGeometry(.1, .15, 1.15, 7), MATS.bark);
   trunk.position.y = .58;
   const blob1 = new THREE.Mesh(new THREE.IcosahedronGeometry(.8, 1), MATS.leafA);
@@ -146,6 +158,19 @@ function makeTree() {
   for (const m of [trunk, blob1, blob2]) { m.castShadow = true; m.receiveShadow = true; }
   pot.receiveShadow = true;
   g.add(trunk, blob1, blob2, pot);
+  return g;
+}
+
+/* prepare the GLB tree once: height-normalize, base on y=0 */
+function prepTreeProto(src) {
+  const t = src.clone(true);
+  const box3 = new THREE.Box3().setFromObject(t);
+  const size = box3.getSize(new THREE.Vector3());
+  const s = TREE_H / size.y;
+  t.scale.setScalar(s);
+  t.position.y = -box3.min.y * s;
+  const g = new THREE.Group();
+  g.add(t);
   return g;
 }
 
@@ -205,13 +230,13 @@ async function start(config) {
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.15;
+  renderer.toneMappingExposure = 1.08;
 
   const scene = new THREE.Scene();
   const backdrop = createBackdrop(scene);
   const pmrem = new THREE.PMREMGenerator(renderer);
   scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-  scene.environmentIntensity = 0.55;
+  scene.environmentIntensity = 0.46;
 
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 600);
   const controls = new OrbitControls(camera, canvas);
@@ -225,12 +250,12 @@ async function start(config) {
   controls.autoRotate = true;
   controls.autoRotateSpeed = AUTO_SPIN;
 
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xd6dade, .9));
-  const key = new THREE.DirectionalLight(0xffffff, 2.5);
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xcfd4d8, .78));
+  const key = new THREE.DirectionalLight(0xffffff, 2.9);
   key.castShadow = true;
   key.shadow.mapSize.set(4096, 4096);
   scene.add(key, key.target);
-  const rim = new THREE.DirectionalLight(0xeef2f5, .75);
+  const rim = new THREE.DirectionalLight(0xeef2f5, .7);
   scene.add(rim);
 
   /* load the four GLB dioramas (Draco-compressed) */
@@ -248,17 +273,19 @@ async function start(config) {
   const loader = new GLTFLoader();
   loader.setDRACOLoader(draco);
 
-  let gltfs;
+  let gltfs, treeGltf;
   try {
-    gltfs = await Promise.all(
-      worlds.map(w => loader.loadAsync(w.model || MODEL_URLS[w.key]))
-    );
+    [gltfs, treeGltf] = await Promise.all([
+      Promise.all(worlds.map(w => loader.loadAsync(w.model || MODEL_URLS[w.key]))),
+      loader.loadAsync(TREE_MODEL_URL).catch(e => { console.error("tree model:", e); return null; })
+    ]);
   } catch (e) {
     console.error(e);
     fallback.hidden = false;
     document.getElementById("loading")?.remove();
     return;
   }
+  if (treeGltf) treeProto = prepTreeProto(treeGltf.scene);
 
   /* normalize each diorama onto its plaza + white callout pill. Yaw is set
    * before measuring: footprint then refers to the ROTATED footprint, so

@@ -71,7 +71,7 @@ function groundTexture(sizeUnits) {
   cx.translate(center, center);
 
   /* asphalt */
-  cx.fillStyle = "#4b5054";
+  cx.fillStyle = "#3f444a";
   cx.fill(p);
 
   /* mottling + fine speckle so the asphalt doesn't read as flat fill */
@@ -84,7 +84,7 @@ function groundTexture(sizeUnits) {
     const x = Math.cos(a) * rr * px, y = Math.sin(a) * rr * px;
     const g2 = cx.createRadialGradient(x, y, 0, x, y, r);
     const dark = Math.random() < .5;
-    g2.addColorStop(0, dark ? "rgba(46,50,54,.14)" : "rgba(132,138,144,.13)");
+    g2.addColorStop(0, dark ? "rgba(38,42,47,.16)" : "rgba(126,132,139,.14)");
     g2.addColorStop(1, "rgba(0,0,0,0)");
     cx.fillStyle = g2;
     cx.beginPath(); cx.arc(x, y, r, 0, Math.PI * 2); cx.fill();
