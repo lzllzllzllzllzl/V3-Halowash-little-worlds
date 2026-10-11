@@ -12,6 +12,15 @@ import dracoWrapper from "./draco-data/draco_wasm_wrapper.js";
 
 const NAVY = 0x122039;
 
+/* --------------------------------------------- language (default: EN) */
+const LANG_KEY = "lpro-lang";
+const HUD_LABELS = {
+  en: { pause: "⏸ Pause", play: "▶ Play" },
+  zh: { pause: "⏸ 暂停", play: "▶ 播放" }
+};
+const langGet = () => { try { return localStorage.getItem(LANG_KEY) || "en"; } catch (e) { return "en"; } };
+let hudLang = "en", hudLabels = HUD_LABELS.en, scenePausedHook = null;
+
 function makeDracoLoader() {
   const loader = new DRACOLoader();
   const files = {
@@ -146,11 +155,14 @@ async function start(config) {
   const pauseBtn = document.getElementById("pause");
   const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let paused = reduced;
+  hudLang = langGet();
+  hudLabels = HUD_LABELS[hudLang] || HUD_LABELS.en;
   function applyPaused() {
     controls.autoRotate = !paused;
-    pauseBtn.textContent = paused ? "▶ 播放" : "⏸ 暂停";
+    pauseBtn.textContent = paused ? hudLabels.play : hudLabels.pause;
     pauseBtn.setAttribute("aria-pressed", String(paused));
   }
+  scenePausedHook = applyPaused;
   pauseBtn.addEventListener("click", () => { paused = !paused; applyPaused(); });
   window.addEventListener("keydown", e => {
     if (e.key === "Escape") { location.href = "index.html"; }
@@ -186,4 +198,13 @@ async function start(config) {
   renderer.domElement.addEventListener("webglcontextrestored", () => location.reload());
 }
 
-window.HWScene = { start };
+window.HWScene = {
+  start,
+  /* switch HUD language (en|zh); page copy is handled by each page's own script */
+  setLang(l) {
+    if (!HUD_LABELS[l]) return;
+    hudLang = l;
+    hudLabels = HUD_LABELS[l];
+    if (scenePausedHook) scenePausedHook();
+  }
+};

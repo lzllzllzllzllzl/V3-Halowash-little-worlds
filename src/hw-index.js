@@ -30,6 +30,16 @@ const MODEL_URLS = {
 const TREE_MODEL_URL = "models/tree-main.glb"; /* street trees, height-normalized */
 const TREE_H = 2.4;                            /* matches the old procedural trees */
 
+/* --------------------------------------------- language (default: EN) */
+const LANG_KEY = "lpro-lang";
+const HUD_LABELS = {
+  en: { pause: "⏸ Pause", play: "▶ Play" },
+  zh: { pause: "⏸ 暂停", play: "▶ 播放" }
+};
+const langGet = () => { try { return localStorage.getItem(LANG_KEY) || "en"; } catch (e) { return "en"; } };
+const langSet = l => { try { localStorage.setItem(LANG_KEY, l); } catch (e) {} };
+let hudLang = "en", hudLabels = HUD_LABELS.en, pillLangHook = null, hudPausedHook = null;
+
 /* ------------------------------------- white callout pills (3D sprites) */
 const ICON_PATHS = {
   home: ["M4 11.4 12 4.8l8 6.6", "M6.3 10.4v8.2h11.4v-8.2"],
@@ -40,12 +50,12 @@ const ICON_PATHS = {
 
 /* One billboard per building: white pill (icon disc, title, subtitle,
  * chevron) with a thin stem down to an anchor dot on the roofline. Drawn
- * as a canvas texture so it stays crisp and immune to DOM compositing. */
-function makeCalloutMesh(name, desc, iconKey) {
-  const W = 720, H = 300;
-  const cnv = document.createElement("canvas");
-  cnv.width = W; cnv.height = H;
+ * as a canvas texture so it stays crisp and immune to DOM compositing.
+ * drawPill is kept separate so the language toggle can redraw in place. */
+function drawPill(cnv, name, desc, iconKey) {
+  const W = cnv.width, H = cnv.height;
   const cx = cnv.getContext("2d");
+  cx.clearRect(0, 0, W, H);
 
   /* stem + anchor dot */
   cx.strokeStyle = "#c3cad1"; cx.lineWidth = 3;
@@ -85,15 +95,22 @@ function makeCalloutMesh(name, desc, iconKey) {
   /* texts */
   cx.textBaseline = "middle";
   cx.fillStyle = "#23282e";
-  cx.font = "700 38px 'Microsoft YaHei','PingFang SC',sans-serif";
+  cx.font = "700 38px 'Microsoft YaHei','PingFang SC',system-ui,sans-serif";
   cx.fillText(name, 124, 50);
   cx.fillStyle = "#8d949b";
-  cx.font = "400 25px 'Microsoft YaHei','PingFang SC',sans-serif";
+  cx.font = "400 25px 'Microsoft YaHei','PingFang SC',system-ui,sans-serif";
   if (desc) cx.fillText(desc, 124, 93);
   cx.fillStyle = "#b9bfc6";
   cx.font = "400 46px system-ui,sans-serif";
   cx.textAlign = "center";
   cx.fillText("›", 668, 63);
+}
+
+function makeCalloutMesh(name, desc, iconKey) {
+  const W = 720, H = 300;
+  const cnv = document.createElement("canvas");
+  cnv.width = W; cnv.height = H;
+  drawPill(cnv, name, desc, iconKey);
 
   const tex = new THREE.CanvasTexture(cnv);
   if (THREE.SRGBColorSpace) tex.colorSpace = THREE.SRGBColorSpace;
@@ -107,6 +124,7 @@ function makeCalloutMesh(name, desc, iconKey) {
   mesh.renderOrder = 10;
   /* anchor dot sits at canvas y 256; keep it at the building-top anchor */
   mesh.userData.dotOffset = (0.5 - 256 / H) * PLANE_H;
+  mesh.userData.redraw = (n, d) => { drawPill(cnv, n, d, iconKey); tex.needsUpdate = true; };
   return mesh;
 }
 
@@ -224,6 +242,8 @@ async function start(config) {
   const canvas = document.getElementById("world");
   const fallback = document.getElementById("fallback");
   const worlds = config.worlds;
+  hudLang = langGet();
+  hudLabels = HUD_LABELS[hudLang] || HUD_LABELS.en;
 
   let renderer;
   try {
@@ -324,7 +344,9 @@ async function start(config) {
     addHedges(unit);
     wrap.add(unit);
     const anchorY = size.y * s + .35;          /* pill dot floats just above the roof */
-    const callout = makeCalloutMesh(w.name, w.desc, w.icon);
+    const pillName = hudLang === "en" ? (w.nameEn || w.name) : w.name;
+    const pillDesc = hudLang === "en" ? (w.descEn || w.desc) : w.desc;
+    const callout = makeCalloutMesh(pillName, pillDesc, w.icon);
     callout.position.y = anchorY - callout.userData.dotOffset;
     wrap.add(callout);
     scene.add(wrap);
@@ -399,9 +421,19 @@ async function start(config) {
   let paused = reduced;
   function applyPaused() {
     controls.autoRotate = !paused && !userMoved;
-    pauseBtn.textContent = paused ? "▶ 播放" : "⏸ 暂停";
+    pauseBtn.textContent = paused ? hudLabels.play : hudLabels.pause;
     pauseBtn.setAttribute("aria-pressed", String(paused));
   }
+  pillLangHook = () => {
+    for (const it of items) {
+      const spec = it.spec;
+      it.callout.userData.redraw(
+        hudLang === "en" ? (spec.nameEn || spec.name) : spec.name,
+        hudLang === "en" ? (spec.descEn || spec.desc) : spec.desc
+      );
+    }
+  };
+  hudPausedHook = applyPaused;
   controls.addEventListener("start", () => { userMoved = true; controls.autoRotate = false; canvas.dataset.view = "interactive"; });
   pauseBtn.addEventListener("click", () => { paused = !paused; applyPaused(); });
   applyPaused();
@@ -469,4 +501,14 @@ async function start(config) {
   renderer.domElement.addEventListener("webglcontextrestored", () => location.reload());
 }
 
-window.HWIndex = { start };
+window.HWIndex = {
+  start,
+  /* switch UI language (en|zh): redraws callout pills + HUD labels */
+  setLang(l) {
+    if (!HUD_LABELS[l]) return;
+    hudLang = l;
+    hudLabels = HUD_LABELS[l];
+    if (pillLangHook) pillLangHook();
+    if (hudPausedHook) hudPausedHook();
+  }
+};

@@ -44,10 +44,10 @@ function groundTexture(sizeUnits) {
   cx.fillRect(0, 0, S, S);
 
   /* faint paving joints on the sidewalks (roads get painted over) */
-  cx.strokeStyle = "rgba(148,156,163,.15)";
+  cx.strokeStyle = "rgba(148,156,163,.14)";
   cx.lineWidth = Math.max(1, u(.05));
   cx.beginPath();
-  for (let d = -H + 1.15; d <= H; d += 2.3) {
+  for (let d = -H + 1.15; d <= H; d += 4.6) {
     cx.moveTo(center + u(d), 0); cx.lineTo(center + u(d), S);
     cx.moveTo(0, center + u(d)); cx.lineTo(S, center + u(d));
   }
@@ -148,12 +148,11 @@ export function createBackdrop(scene) {
   ground.receiveShadow = true;
   scene.add(ground);
 
-  /* distant skyline: a few large, high-contrast prismatic slabs — light
-   * off-white volumes against a deep anthracite wall — the studio-lit
-   * studio-backdrop look of the key visual. Only a handful of masses, so
-   * the silhouettes stay graphic instead of reading as noise.
-   * Each block fades out as the camera gets near it, so the ring only
-   * ever reads as a far-side skyline at any zoom or orientation. */
+  /* backdrop: towering studio walls that frame the dioramas — the key
+   * visual's close-range white panels with a dark monolith dead-centre
+   * behind the crossing. The ring sits just outside the plazas (walls
+   * face the centre); each block still fades out as the camera gets
+   * near it, so orbiting never clips through a wall. */
   const ring = new THREE.Group();
   const blocks = [];
   function block(x, z, w, d, h, color, rotY) {
@@ -162,29 +161,29 @@ export function createBackdrop(scene) {
     });
     const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
     b.position.set(x, h / 2, z);
-    b.rotation.y = rotY ?? Math.random() * Math.PI;
+    b.rotation.y = rotY ?? 0;
     ring.add(b);
     blocks.push(b);
   }
-  /* near ring: pale concrete masses, tall enough to read as walls */
-  const NEAR_SHADES = [0xe8ebee, 0xdfe3e7, 0xd6dbdf, 0xcdd2d7];
-  const N = 14;
-  for (let i = 0; i < N; i++) {
-    const a = (i + Math.random() * .45) / N * Math.PI * 2;
-    const r = 58 + Math.random() * 16;
-    block(Math.cos(a) * r, Math.sin(a) * r,
-      5 + Math.random() * 5, 4 + Math.random() * 4,
-      11 + Math.random() * 11, NEAR_SHADES[i % NEAR_SHADES.length]);
-  }
-  /* far ring: near-black anthracite monoliths — hard silhouette contrast */
-  const DARK = [0x24282d, 0x2e3339, 0x1c2024];
-  const T = 7;
-  for (let i = 0; i < T; i++) {
-    const a = (i + Math.random() * .5) / T * Math.PI * 2;
-    const r = 76 + Math.random() * 14;
-    block(Math.cos(a) * r, Math.sin(a) * r,
-      5 + Math.random() * 4, 4 + Math.random() * 3,
-      26 + Math.random() * 24, DARK[i % DARK.length]);
+  /* walls face the centre: width axis perpendicular to the radius */
+  const faceCenter = a => Math.atan2(-Math.cos(a), -Math.sin(a));
+  /* a few free-standing monoliths in an open white field — big gaps
+   * between them, nothing enclosing the dioramas. Angles face the
+   * start camera (225° = dead-centre behind the crossing). */
+  const PANEL = [0xd6dbdf, 0xcbd1d6, 0xc2c9cf, 0xdde1e4];
+  const MASSES = [
+    [160, 36, 13, 5, 30, 1],  // white
+    [190, 35, 14, 5, 28, 1],  // white
+    [225, 31, 9, 6, 44, 0],   // DARK monolith, centre-back
+    [258, 34, 12, 5, 34, 2],  // white
+    [305, 37, 15, 6, 24, 3],  // white
+    [60, 36, 13, 5, 28, 1],   // white (far side, for rotation)
+    [100, 33, 8, 5, 32, 0]    // dark (far side, for rotation)
+  ];
+  for (const [deg, r, w, d, h, pi] of MASSES) {
+    const a = deg * Math.PI / 180;
+    block(Math.cos(a) * r, Math.sin(a) * r, w, d, h,
+      pi === 0 ? 0x2e3339 : PANEL[pi], faceCenter(a));
   }
   scene.add(ring);
 
