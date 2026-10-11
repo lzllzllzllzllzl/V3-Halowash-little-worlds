@@ -92,8 +92,9 @@ function drawPill(cnv, name, desc, iconKey) {
   for (const d of (ICON_PATHS[iconKey] || ICON_PATHS.home)) cx.stroke(new Path2D(d));
   cx.restore();
 
-  /* texts */
+  /* texts (textAlign must be reset: a previous draw leaves it "center") */
   cx.textBaseline = "middle";
+  cx.textAlign = "left";
   cx.fillStyle = "#23282e";
   cx.font = "700 38px 'Microsoft YaHei','PingFang SC',system-ui,sans-serif";
   cx.fillText(name, 124, 50);
