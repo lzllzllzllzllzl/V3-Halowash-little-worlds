@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#eef0f2">
-<meta name="description" content="HaloWash 四场景小世界：居家护理、病房护理、养老院护理与头皮沙龙四座微缩建筑，可旋转查看，点击进入实况场景。">
-<title>HaloWash 四场景小世界</title><script>window.addEventListener("error",function(e){document.title="ERR:"+e.message+" @line"+(e.lineno||"?");});window.addEventListener("unhandledrejection",function(e){var r=e.reason||{};document.title="REJ:"+r.message+" @ "+String(r.stack||"").split("\n")[1];});</script>
+<meta name="description" content="L Pro 四场景小世界：居家护理、病房护理、养老院护理与头皮沙龙四座微缩建筑，可旋转查看，点击进入实况场景。">
+<title>L Pro 四场景小世界</title><script>window.addEventListener("error",function(e){document.title="ERR:"+e.message+" @line"+(e.lineno||"?");});window.addEventListener("unhandledrejection",function(e){var r=e.reason||{};document.title="REJ:"+r.message+" @ "+String(r.stack||"").split("\n")[1];});</script>
 <link rel="icon" href="data:,">
 <style>
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#eef0f2;overscroll-behavior:none}body{font-family:system-ui,sans-serif}
@@ -21,7 +21,7 @@
 .chip-btn{cursor:pointer}
 .chip-btn:hover{background:#f3f5f6}
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
-/* permanent brand block, top-left (L'Oréal Paris · HaloWash) */
+/* permanent brand block, top-left (L'Oréal Paris · L Pro) */
 .brand{position:fixed;top:max(24px,env(safe-area-inset-top));left:28px;z-index:10;pointer-events:none;user-select:none;color:#17191c}
 .brand .loreal{margin:0;font:600 17px/1 'Optima','Candara','Trebuchet MS',Georgia,serif;letter-spacing:.12em;color:#101214}
 .brand .paris{margin:4px 0 0;font:600 10px/1 'Optima','Candara','Trebuchet MS',Georgia,serif;letter-spacing:.46em;color:#101214}
@@ -34,8 +34,8 @@
 </style>
 </head>
 <body>
-<canvas id="world" tabindex="0" role="application" aria-label="四座 HaloWash 护理场景建筑：居家护理、病房护理、养老院护理、头皮沙龙，拖拽旋转，点击进入" aria-describedby="instructions"></canvas>
-<header class="brand" role="banner" aria-label="L'Oréal Paris HaloWash 四场景小世界">
+<canvas id="world" tabindex="0" role="application" aria-label="四座 L Pro 护理场景建筑：居家护理、病房护理、养老院护理、头皮沙龙，拖拽旋转，点击进入" aria-describedby="instructions"></canvas>
+<header class="brand" role="banner" aria-label="L'Oréal Paris L Pro 四场景小世界">
   <p class="loreal">L'ORÉAL</p>
   <p class="paris">PARIS</p>
   <h1 class="title">L Pro</h1>
@@ -48,9 +48,9 @@
 <div class="hud-top">
   <button id="pause" class="chip chip-btn" type="button" aria-pressed="false">⏸ 暂停</button>
 </div>
-<p id="instructions" class="sr-only">四座 HaloWash 护理场景建筑位于十字路口四周：居家护理、病房护理、养老院护理与头皮沙龙，每座建筑上方有白色标注胶囊。拖拽旋转视角，滚轮或双指缩放，点击白色标注或一座建筑进入对应场景页；方向键旋转视角，加号减号缩放，空格暂停动画，Esc 复位视角。</p>
+<p id="instructions" class="sr-only">四座 L Pro 护理场景建筑位于十字路口四周：居家护理、病房护理、养老院护理与头皮沙龙，每座建筑上方有白色标注胶囊。拖拽旋转视角，滚轮或双指缩放，点击白色标注或一座建筑进入对应场景页；方向键旋转视角，加号减号缩放，空格暂停动画，Esc 复位视角。</p>
 <noscript><div style="position:absolute;inset:40% 15%;color:#3a4046;text-align:center">请启用 JavaScript 浏览四场景小世界。</div></noscript>
-<script src="./index-bundle.js?v=19"></script>
+<script src="./index-bundle.js?v=20"></script>
 <script>
 window.HWIndex.start({ worlds: [
   { key: "home",   name: "居家护理",   desc: "便捷舒适 美发在家", icon: "home",  href: "scene-home.html",   footprint: 11.2, yaw: 180 },

@@ -1,4 +1,4 @@
-/* HaloWash scene pages shared bootstrap.
+/* L Pro scene pages shared bootstrap.
  * Bundled to an IIFE exposing window.HWScene.start(config).
  * Draco decoder ships inside the bundle as data URIs so pages
  * also work when opened directly from disk (file://). */

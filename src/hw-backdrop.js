@@ -12,8 +12,8 @@ function skyTexture() {
   cnv.width = 2; cnv.height = 512;
   const cx = cnv.getContext("2d");
   const g = cx.createLinearGradient(0, 0, 0, 512);
-  g.addColorStop(0.00, "#dfe4e8");   /* zenith */
-  g.addColorStop(0.55, "#e9edf0");
+  g.addColorStop(0.00, "#d9dee2");   /* zenith */
+  g.addColorStop(0.55, "#e6eaed");
   g.addColorStop(1.00, "#eef0f2");   /* horizon (== fog color) */
   cx.fillStyle = g;
   cx.fillRect(0, 0, 2, 512);
@@ -148,38 +148,43 @@ export function createBackdrop(scene) {
   ground.receiveShadow = true;
   scene.add(ground);
 
-  /* distant skyline: pale gray tower slabs plus a few far white high-rises,
-   * softened by fog — the printed-backdrop feel of the key visual.
+  /* distant skyline: a few large, high-contrast prismatic slabs — light
+   * off-white volumes against a deep anthracite wall — the studio-lit
+   * studio-backdrop look of the key visual. Only a handful of masses, so
+   * the silhouettes stay graphic instead of reading as noise.
    * Each block fades out as the camera gets near it, so the ring only
    * ever reads as a far-side skyline at any zoom or orientation. */
-  const shades = [0xc9ced4, 0xbfc6cc, 0xd4d9de, 0xb6bdc4, 0xcdd3d8];
   const ring = new THREE.Group();
   const blocks = [];
-  function block(x, z, w, d, h, color) {
+  function block(x, z, w, d, h, color, rotY) {
     const mat = new THREE.MeshStandardMaterial({
-      color, roughness: .95, transparent: true, opacity: 0
+      color, roughness: .88, transparent: true, opacity: 0
     });
     const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
     b.position.set(x, h / 2, z);
-    b.rotation.y = Math.random() * Math.PI;
+    b.rotation.y = rotY ?? Math.random() * Math.PI;
     ring.add(b);
     blocks.push(b);
   }
-  const N = 40;
+  /* near ring: pale concrete masses, tall enough to read as walls */
+  const NEAR_SHADES = [0xe8ebee, 0xdfe3e7, 0xd6dbdf, 0xcdd2d7];
+  const N = 14;
   for (let i = 0; i < N; i++) {
-    const a = (i + Math.random() * .7) / N * Math.PI * 2;
-    const r = 66 + Math.random() * 12;
-    const w = 2.5 + Math.random() * 2, d = 2.5 + Math.random() * 1.5;
-    const h = Math.random() < .3 ? 16 + Math.random() * 12 : 7 + Math.random() * 9;
-    block(Math.cos(a) * r, Math.sin(a) * r, w, d, h, shades[i % shades.length]);
+    const a = (i + Math.random() * .45) / N * Math.PI * 2;
+    const r = 58 + Math.random() * 16;
+    block(Math.cos(a) * r, Math.sin(a) * r,
+      5 + Math.random() * 5, 4 + Math.random() * 4,
+      11 + Math.random() * 11, NEAR_SHADES[i % NEAR_SHADES.length]);
   }
-  const T = 10;
+  /* far ring: near-black anthracite monoliths — hard silhouette contrast */
+  const DARK = [0x24282d, 0x2e3339, 0x1c2024];
+  const T = 7;
   for (let i = 0; i < T; i++) {
     const a = (i + Math.random() * .5) / T * Math.PI * 2;
-    const r = 86 + Math.random() * 16;
+    const r = 76 + Math.random() * 14;
     block(Math.cos(a) * r, Math.sin(a) * r,
-      3.5 + Math.random() * 2, 3 + Math.random() * 1.5, 34 + Math.random() * 22,
-      0xdadfe3);
+      5 + Math.random() * 4, 4 + Math.random() * 3,
+      26 + Math.random() * 24, DARK[i % DARK.length]);
   }
   scene.add(ring);
 

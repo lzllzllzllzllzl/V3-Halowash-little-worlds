@@ -1,4 +1,4 @@
-/* HaloWash overview page bootstrap: four scene dioramas (GLB, one per care
+/* L Pro overview page bootstrap: four scene dioramas (GLB, one per care
  * scenario) stand on light concrete plazas around a rounded crossroads,
  * labelled by white callout pills (HTML overlay) that link to each live
  * scene. Bundled to an IIFE exposing window.HWIndex.start(config). The
@@ -127,11 +127,11 @@ function roundedRectShape(w, h, r) {
 }
 
 const MATS = {
-  slab: new THREE.MeshStandardMaterial({ color: 0xe3e7ea, roughness: .93 }),
+  slab: new THREE.MeshStandardMaterial({ color: 0xe9edf0, roughness: .9 }),
   bark: new THREE.MeshStandardMaterial({ color: 0x63686d, roughness: .95 }),
-  leafA: new THREE.MeshStandardMaterial({ color: 0x6d7a70, roughness: 1 }),
-  leafB: new THREE.MeshStandardMaterial({ color: 0x5f6d63, roughness: 1 }),
-  hedge: new THREE.MeshStandardMaterial({ color: 0x647e50, roughness: 1 }),
+  leafA: new THREE.MeshStandardMaterial({ color: 0x53663f, roughness: 1 }),
+  leafB: new THREE.MeshStandardMaterial({ color: 0x475a36, roughness: 1 }),
+  hedge: new THREE.MeshStandardMaterial({ color: 0x475f3a, roughness: 1 }),
   planter: new THREE.MeshStandardMaterial({ color: 0xd5d9dc, roughness: .92 })
 };
 
@@ -168,7 +168,7 @@ function prepTreeProto(src) {
   t.traverse(o => {
     if (o.isMesh && o.material) {
       o.material = o.material.clone();
-      o.material.color = new THREE.Color(0x8fa478);   /* deep-forest tint over the baked albedo */
+      o.material.color = new THREE.Color(0x6f8a5c);   /* deep-forest tint over the baked albedo */
     }
   });
   const box3 = new THREE.Box3().setFromObject(t);
